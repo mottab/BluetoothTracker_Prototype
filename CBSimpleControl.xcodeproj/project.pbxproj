@@ -326,6 +326,7 @@
 				96BE733D1EB60AC2008711B1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -16,7 +16,9 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert|UIUserNotificationTypeSound categories:nil]];
+    [application registerForRemoteNotifications];
+    
     return YES;
 }
 
@@ -45,6 +47,11 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    UILocalNotification *notification = [[UILocalNotification alloc] init];
+    notification.alertAction = @"Bluetooth Tracker Notification";
+    notification.alertBody = @"Application should be running in background";
+    [[UIApplication sharedApplication] scheduleLocalNotification:notification];
+    sleep(2);
 }
 
 

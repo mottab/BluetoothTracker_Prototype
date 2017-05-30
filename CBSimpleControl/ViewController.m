@@ -26,6 +26,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self setup];
+    
 }
 
 
@@ -74,6 +75,29 @@
 
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central
 {
+    NSString *stateString = nil;
+    switch (self.myCentralManager.state) {
+        case CBCentralManagerStateUnauthorized:
+            stateString = @"The app is not authorized to use Bluetooth Low Energy.";
+            [self pushNotification:stateString];
+            break;
+        case CBCentralManagerStatePoweredOff:
+            stateString = @"Bluetooth is currently powered off.";
+            [self pushNotification:stateString];
+            break;
+        case CBCentralManagerStateResetting:
+            stateString = @"The connection with the system service was momentarily lost, update imminent.";
+            [self pushNotification:stateString];
+            break;
+        case CBCentralManagerStateUnsupported:
+            stateString = @"The platform doesn't support Bluetooth Low Energy.";
+            [self pushNotification:stateString];
+            break;
+            
+        default:
+            stateString = nil;
+            break;
+    }
     
 }
 
@@ -127,6 +151,9 @@
         {
             self.interestingCharacterisitic = characteristic;
             self.textView.text = [self.textView.text stringByAppendingString:[NSString stringWithFormat:@"Pushing to characterisitics %@\n", characteristic]];
+            [peripheral setNotifyValue:YES forCharacteristic:characteristic];
+            self.textView.text = [self.textView.text stringByAppendingString:[NSString stringWithFormat:@"Subscriping to characterisitics %@\n", characteristic]];
+            
         }
         else if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:@"713D0002-503E-4C75-BA94-3148F18D941E"]])
         {
@@ -144,6 +171,14 @@
     NSLog(@"Update notification for characteristic %@", characteristic);
     self.textView.text = [self.textView.text stringByAppendingString:[NSString stringWithFormat:@"Update notification for characteristic %@\n", characteristic]];
     
+}
+
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+{
+    if(error) {
+        NSLog(@"Error updating characterisitic value %@", characteristic);
+    }
+    NSLog(@"Update  for characteristic %@ with value %@", characteristic, [NSString stringWithUTF8String:[characteristic.value bytes]]);
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
@@ -187,5 +222,14 @@
 
 #pragma mark - UITextViewDelegate
 
+#pragma mark - UserNotifications
 
+// Send user a local notification if they have the app running in the bg
+- (void) pushNotification:(NSString *)not_string {
+    UILocalNotification *notification = [[UILocalNotification alloc] init];
+    notification.alertAction = @"Bluetooth Tracker Notification";
+    notification.alertBody = not_string;
+    notification.fireDate = [NSDate dateWithTimeIntervalSinceNow:1];
+    [[UIApplication sharedApplication] scheduleLocalNotification:notification];
+}
 @end
